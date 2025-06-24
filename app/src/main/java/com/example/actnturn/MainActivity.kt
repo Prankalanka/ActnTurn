@@ -2,6 +2,7 @@ package com.example.actnturn
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,7 +25,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.example.actnturn.ui.theme.ActnTurnTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<MainViewModel>()
 
@@ -34,11 +37,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        Log.d("GEN", "defaultOnCreate")
+
         dataStoreManager = DataStoreManager(context = applicationContext)
 
+        Log.d("GEN", "created dataStore")
+
         enableEdgeToEdge()
+        Log.d("GEN", "edge to edge")
+
         setContent {
             ActnTurnTheme {
+                Log.d("GEN", "themed")
                 Scaffold(
                     topBar = {
                         TopAppBar(
@@ -55,7 +65,9 @@ class MainActivity : ComponentActivity() {
                             .padding(paddingValues = innerPadding) // padding applied here
                     ) {
                         // all content should be here
+                        Log.d("GEN", "start creating content")
                         ServiceSwitch(viewModel)
+                        Log.d("GEN", "finish creating content")
                     }
                 }
             }
@@ -70,15 +82,20 @@ data class ToggleableInfo (
 
 @Composable
 fun ServiceSwitch(viewModel: MainViewModel) {
-    val switch = viewModel.serviceSwitch.collectAsState()
+    val switchState = viewModel.serviceSwitch.collectAsState(false)
+
+    Log.d("GEN", "recomposed")
 
     Row (verticalAlignment = Alignment.CenterVertically) {
-        Text (text = switch.value.text)
+        Text (text = "Service running")
         Spacer(modifier = Modifier.weight(1f))
         Switch(
-            checked = switch.value.isChecked,
+            checked = switchState.value,
             // Set isChecked to current value
-            onCheckedChange = {viewModel.toggleServiceSwitch()}
+            onCheckedChange = {
+                viewModel.saveServiceSwitch(!switchState.value)
+                Log.d("GEN", "compose change ${!switchState.value}")
+            }
         )
     }
 }

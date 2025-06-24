@@ -1,25 +1,27 @@
 package com.example.actnturn
 
+import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 @HiltViewModel
-class MainViewModel @Inject constructor(val dataStoreManager: DataStoreManager) : ViewModel() {
+class MainViewModel @Inject constructor(private val dataStoreManager: DataStoreManager) : ViewModel() {
 
-    private val _serviceSwitch = MutableStateFlow(ToggleableInfo(isChecked = false, text = "Service running"))
-    val serviceSwitch = _serviceSwitch.asStateFlow()
+    val serviceSwitch = dataStoreManager.serviceSwitch
 
-    fun getServiceSwitch()
-    {
-        return dataStoreManager.
-    }
-
-
-    fun toggleServiceSwitch() {
-        _serviceSwitch.value = _serviceSwitch.value.copy(isChecked = !_serviceSwitch.value.isChecked)
+    fun saveServiceSwitch(value: Boolean) {
+        viewModelScope.launch {
+            Log.d("GEN", "dataStore change:  $value")
+            dataStoreManager.saveValue(dataStoreManager.serviceSwitchKey, value)
+        }
     }
 }
